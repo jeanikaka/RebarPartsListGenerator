@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Structure;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
+using RebarPartsListGenerator.Model;
 
 namespace RebarPartsListGenerator
 {
@@ -15,18 +16,18 @@ namespace RebarPartsListGenerator
     public class PartsListGeneratorMain : IExternalCommand
     {
         Document _doc;
+        Selection _sel;
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
-        {
+        {            
             try
             {
+                _sel = commandData.Application.ActiveUIDocument.Selection;
                 _doc = commandData.Application.ActiveUIDocument.Document;
-                FilteredElementCollector collector = new FilteredElementCollector(_doc);
-                ViewSchedule rebarSpec = collector.OfCategory(BuiltInCategory.OST_Schedules).WhereElementIsNotElementType().First(it => it.Name == "LC0000_Арматура_Cпецификация на жб конструкцию деталями_Без_IFC") as ViewSchedule;
-                if (rebarSpec != null)
-                {
+                ScheduleService scheduleService = new ScheduleService(_doc, _sel);
+                ViewSchedule rebarSchedule =  scheduleService.ViewScheduleFromSelection();
 
-                }
-
+                RebarHolder rebarHolder = new RebarHolder(rebarSchedule, _doc);
+                List<Rebar> rebars = rebarHolder.GetElements();
 
                 return Result.Succeeded;
             }
@@ -34,7 +35,12 @@ namespace RebarPartsListGenerator
             {
                 return Result.Failed;
             }
-            
         }
+        public static void Main()
+        {
+
+        }
+
     }
+
 }
