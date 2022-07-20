@@ -21,13 +21,14 @@ namespace RebarPartsListGenerator
         {            
             try
             {
+
                 _sel = commandData.Application.ActiveUIDocument.Selection;
                 _doc = commandData.Application.ActiveUIDocument.Document;
                 ScheduleService scheduleService = new ScheduleService(_doc, _sel);
                 ViewSchedule rebarSchedule =  scheduleService.ViewScheduleFromSelection();
 
                 RebarHolder rebarHolder = new RebarHolder(rebarSchedule, _doc);
-                List<Rebar> rebars = rebarHolder.GetElements();
+                List<Element> rebars = rebarHolder.GetElements();
 
                 return Result.Succeeded;
             }
