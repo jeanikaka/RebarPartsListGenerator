@@ -21,14 +21,20 @@ namespace RebarPartsListGenerator
         {            
             try
             {
-
                 _sel = commandData.Application.ActiveUIDocument.Selection;
                 _doc = commandData.Application.ActiveUIDocument.Document;
-                ScheduleService scheduleService = new ScheduleService(_doc, _sel);
-                ViewSchedule rebarSchedule =  scheduleService.ViewScheduleFromSelection();
+                ViewSchedule activeView = _doc.ActiveView as ViewSchedule;
+                int selectedElemsCount = _sel.GetElementIds().Count;
+                if (activeView == null || selectedElemsCount < 1)
+                {
+                    TaskDialog.Show("Ошибка", "Откройте спецификацию и выделите столбец перед запуском!");
+                    return Result.Failed;
+                }
+                TaskDialog.Show("Ведомость деталей", "Выберите любой столбец таблицы в ведомости арматуры", TaskDialogCommonButtons.Ok);
 
-                RebarHolder rebarHolder = new RebarHolder(rebarSchedule, _doc);
-                List<Element> rebars = rebarHolder.GetElements();
+                List<Rebar> rebars = new RebarService(_sel, _doc).RebarsFromCurSelected();
+                List<Rebar> filteredRebars = this.FilterRebars(rebars);
+
 
                 return Result.Succeeded;
             }
@@ -37,9 +43,21 @@ namespace RebarPartsListGenerator
                 return Result.Failed;
             }
         }
-        public static void Main()
+        /// <summary>
+        /// Use this method for filter rebar list by selected parameters values
+        /// </summary>
+        /// <param name="rebarList">List to filter</param>
+        /// <returns>Filtered list of rebars</returns>
+        private List<Rebar> FilterRebars(List<Rebar> rebarList)
         {
-
+            return rebarList.Where(element =>
+            {
+                bool isNPP_R_Length_in_Running_Meters = _doc.GetElement(element.GetTypeId()).LookupParameter("NPP_R_Length_in_Running_Meters").AsInteger() == 1;
+                bool isNPP_R__B = element.LookupParameter("NPP_R__B").AsDouble() > 0;
+                bool isEndProcessing = element.LookupParameter("NPP_Обработка_Концов_0_1").AsInteger() == 1;
+                bool allow = (isNPP_R_Length_in_Running_Meters || isNPP_R__B || isEndProcessing);
+                return allow;
+            }).ToList();
         }
 
     }

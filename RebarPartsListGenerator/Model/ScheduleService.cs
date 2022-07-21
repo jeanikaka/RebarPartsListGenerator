@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Structure;
 using Autodesk.Revit.UI.Selection;
 
 namespace RebarPartsListGenerator.Model
@@ -21,7 +22,8 @@ namespace RebarPartsListGenerator.Model
         public ViewSchedule ViewScheduleFromSelection()
         {            
             SelectionFilter schedulesFilter = new SelectionFilter(BuiltInCategory.OST_ScheduleGraphics);
-            Reference pickedRef = _sel.PickObject(ObjectType.Element, schedulesFilter, "Select rebar schedule");
+            Reference pickedRef = null;
+
             ScheduleSheetInstance rebarScheduleInstance = _doc.GetElement(pickedRef) as ScheduleSheetInstance;
             ViewSchedule rebarSchedule = _doc.GetElement(rebarScheduleInstance.ScheduleId) as ViewSchedule;
 
