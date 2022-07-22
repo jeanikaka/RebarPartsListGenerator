@@ -23,19 +23,25 @@ namespace RebarPartsListGenerator
             {
                 _sel = commandData.Application.ActiveUIDocument.Selection;
                 _doc = commandData.Application.ActiveUIDocument.Document;
+
                 ViewSchedule activeView = _doc.ActiveView as ViewSchedule;
                 int selectedElemsCount = _sel.GetElementIds().Count;
                 if (activeView == null || selectedElemsCount < 1)
                 {
-                    TaskDialog.Show("Ошибка", "Откройте спецификацию и выделите столбец перед запуском!");
+                    TaskDialog.Show("Ошибка", "Откройте спецификацию и выделите столбец перед запуском!", TaskDialogCommonButtons.Ok);
                     return Result.Failed;
                 }
-                TaskDialog.Show("Ведомость деталей", "Выберите любой столбец таблицы в ведомости арматуры", TaskDialogCommonButtons.Ok);
 
                 List<Rebar> rebars = new RebarService(_sel, _doc).RebarsFromCurSelected();
                 List<Rebar> filteredRebars = this.FilterRebars(rebars);
 
+                using (Transaction transaction = new Transaction(_doc, "Создание ведомости деталей"))
+                {
+                    transaction.Start();
+                    ViewDrafting viewDrafting = new ViewDraftingService(_doc).ViewDraftingCreate("NPP_Имя вида с переводом");
 
+                    transaction.Commit();
+                }
                 return Result.Succeeded;
             }
             catch (Exception ex)
