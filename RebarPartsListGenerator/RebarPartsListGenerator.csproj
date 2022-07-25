@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EntryPoint\PartsListGeneratorMain.cs" />
+    <Compile Include="Model\ModellingService.cs" />
     <Compile Include="Model\Parameters.cs" />
     <Compile Include="Model\RebarService.cs" />
     <Compile Include="Model\ViewDraftingService.cs" />

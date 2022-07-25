@@ -38,7 +38,10 @@ namespace RebarPartsListGenerator
                 using (Transaction transaction = new Transaction(_doc, "Создание ведомости деталей"))
                 {
                     transaction.Start();
-                    ViewDrafting viewDrafting = new ViewDraftingService(_doc).ViewDraftingCreate("NPP_Имя вида с переводом");
+                    ViewDraftingService viewDraftingService = new ViewDraftingService(_doc, filteredRebars);
+                    ViewDrafting viewDrafting = viewDraftingService.ViewDraftingCreate();
+                    ModellingService listModelling = new ModellingService(_doc);
+                    DetailLine curve = listModelling.CreatingListOfParts(viewDrafting as View);
 
                     transaction.Commit();
                 }
