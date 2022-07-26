@@ -41,7 +41,7 @@ namespace RebarPartsListGenerator
                     ViewDraftingService viewDraftingService = new ViewDraftingService(_doc, filteredRebars);
                     ViewDrafting viewDrafting = viewDraftingService.ViewDraftingCreate();
                     ModellingService listModelling = new ModellingService(_doc);
-                    DetailLine curve = listModelling.CreatingListOfParts(viewDrafting as View);
+                    DetailCurveArray curve = listModelling.TableHead(viewDrafting as View);
 
                     transaction.Commit();
                 }
