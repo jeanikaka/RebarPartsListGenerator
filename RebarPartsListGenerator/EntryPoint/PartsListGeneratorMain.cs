@@ -32,7 +32,8 @@ namespace RebarPartsListGenerator
                     return Result.Failed;
                 }
 
-                List<Rebar> rebars = new RebarService(_sel, _doc).RebarsFromCurSelected();
+                RebarService rebarService = new RebarService(_sel, _doc);
+                List<Rebar> rebars = rebarService.RebarsFromCurSelected();
                 List<Rebar> filteredRebars = this.FilterRebars(rebars);
 
                 using (Transaction transaction = new Transaction(_doc, "Создание ведомости деталей"))
@@ -41,10 +42,13 @@ namespace RebarPartsListGenerator
                     ViewDraftingService viewDraftingService = new ViewDraftingService(_doc, filteredRebars);
                     ViewDrafting viewDrafting = viewDraftingService.ViewDraftingCreate();
                     ModellingService listModelling = new ModellingService(_doc);
-                    DetailCurveArray curve = listModelling.TableHead(viewDrafting as View);
+                    DetailCurveArray curve = listModelling.CreateTableHead(viewDrafting as View);
+                    listModelling.CreatingMultipleTableBody(viewDrafting as View);
 
                     transaction.Commit();
                 }
+                IList<Curve> rebarCurves = rebarService.GetRebarCurves(filteredRebars);
+
                 return Result.Succeeded;
             }
             catch (Exception ex)

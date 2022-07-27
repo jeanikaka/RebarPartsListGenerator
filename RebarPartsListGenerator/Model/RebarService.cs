@@ -28,6 +28,7 @@ namespace RebarPartsListGenerator.Model
         /// Returns the Rebars from currently selected elements
         /// </summary>
         /// <returns>List of currently selected elements</returns>
+
         public List<Rebar> RebarsFromCurSelected()
         {
             return new FilteredElementCollector(_doc, _sel.GetElementIds())
@@ -37,5 +38,40 @@ namespace RebarPartsListGenerator.Model
             .Cast<Rebar>()
             .ToList();
         }
+        public IList<Curve> GetRebarCurves(List<Rebar> rebarList)
+        {
+
+            IList<Curve> rebarCurves = new List<Curve>();
+            Rebar rebar = rebarList[0];
+            int n = rebar.NumberOfBarPositions;
+            for (int i = 0; i < n; i++)
+            {
+                IList<Curve> centerlineCurves = rebar.GetCenterlineCurves(adjustForSelfIntersection: true, suppressHooks: false, suppressBendRadius: false, MultiplanarOption.IncludeOnlyPlanarCurves, i);
+
+                if (rebar.IsRebarShapeDriven()) //Если арматура по форме
+                {
+                    var accessor
+                        = rebar.GetShapeDrivenAccessor();
+
+                    var trf = accessor
+                        .GetBarPositionTransform(i);
+
+
+                    foreach (var c in centerlineCurves)
+                    {
+                        rebarCurves.Add(c.CreateTransformed(trf));
+                    }
+                }
+                else// Произвольная форма
+                {
+                    foreach (var c in centerlineCurves)
+                    {
+                        rebarCurves.Add(c);
+                    }
+                }
+            }
+            return rebarCurves;
+        }
+
     }
 }
