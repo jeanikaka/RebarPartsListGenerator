@@ -15,7 +15,7 @@ namespace RebarPartsListGenerator.Model
             _doc = doc;
         }
 
-        int lineStyle4BlackContId = 2255547; //Стиль линии "NPP_5_Сплошная_Черная"
+        int lineStyle4BlackContId = 2255547; //Стиль линии "NPP_4_Сплошная_Черная"
         int lineStyle5BlackContId = 3062478; //Стиль линии "NPP_5_Сплошная_Черная"
 
         public DetailCurveArray CreateTableHead(View view)
@@ -74,7 +74,7 @@ namespace RebarPartsListGenerator.Model
             return detailCurveArray;
         }
 
-        double[] _p0 = { 0, -1000, 0 };//The coors of last horizontal line startpoint of table head
+        public double[] _p0 = { 0, -1000, 0 };//The coords of last horizontal line startpoint of table head
         
         public void CreatingMultipleTableBody(View view)
         {
@@ -137,9 +137,26 @@ namespace RebarPartsListGenerator.Model
             textNoteOptions.TypeId = new ElementId(1443588);
             TextNote itemTextNote = TextNote.Create(_doc, view.Id, posTextNotePos, posText, textNoteOptions);
             itemTextNote.Width = 0.0298288568924218;
-
-
         }
+
+        
+        public void CreateScetchFromRebarCurves(View view, List<Curve> rebarCurves)
+        {
+            CurveArray curveArray = new CurveArray();
+            foreach (Curve curve in rebarCurves)
+            {
+                curveArray.Append(curve);
+            }
+            DetailCurveArray detailCurveArray = _doc.Create.NewDetailCurveArray(view, curveArray);
+
+            foreach (DetailCurve detailLine in detailCurveArray)
+            {
+                detailLine.LineStyle = _doc.GetElement(new ElementId(lineStyle5BlackContId));//стиль "NPP_5_Сплошная_Черная"
+            }
+        }
+
+
+        
 
 
     }

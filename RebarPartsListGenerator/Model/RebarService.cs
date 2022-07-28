@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
+using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
 using System;
 using System.Collections.Generic;
@@ -38,15 +39,15 @@ namespace RebarPartsListGenerator.Model
             .Cast<Rebar>()
             .ToList();
         }
-        public IList<Curve> GetRebarCurves(List<Rebar> rebarList)
+        public List<Curve> GetRebarCurves(List<Rebar> rebarList)
         {
 
-            IList<Curve> rebarCurves = new List<Curve>();
+            List<Curve> rebarCurves = new List<Curve>();
             Rebar rebar = rebarList[0];
             int n = rebar.NumberOfBarPositions;
             for (int i = 0; i < n; i++)
             {
-                IList<Curve> centerlineCurves = rebar.GetCenterlineCurves(adjustForSelfIntersection: true, suppressHooks: false, suppressBendRadius: false, MultiplanarOption.IncludeOnlyPlanarCurves, i);
+                List<Curve> centerlineCurves = rebar.GetCenterlineCurves(adjustForSelfIntersection: true, suppressHooks: false, suppressBendRadius: false, MultiplanarOption.IncludeOnlyPlanarCurves, i).ToList();
 
                 if (rebar.IsRebarShapeDriven()) //Если арматура по форме
                 {
@@ -72,6 +73,7 @@ namespace RebarPartsListGenerator.Model
             }
             return rebarCurves;
         }
+        
 
     }
 }
