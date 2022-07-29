@@ -8,12 +8,20 @@ using System.Threading.Tasks;
 
 namespace RebarPartsListGenerator.Model
 {
+    /// <summary>
+    /// Class for work with abstract geometry
+    /// </summary>
     public class GeometryService
     {
         public GeometryService()
         {
 
         }
+        /// <summary>
+        /// This method gets center of bounding box which describes the geometry centers of curves.
+        /// </summary>
+        /// <param name="curves">Curves described by bounding box</param>
+        /// <returns>The center of bounding box which is going through geometry centers of curves</returns>
         public XYZ GetBbCenterFromCurveList(List<Curve> curves)
         {
             List<XYZ> allPoints = curves.Select(it => {
