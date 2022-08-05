@@ -31,33 +31,19 @@ namespace RebarPartsListGenerator
                     TaskDialog.Show("Ошибка", "Откройте спецификацию и выделите столбец перед запуском!", TaskDialogCommonButtons.Ok);
                     return Result.Failed;
                 }
-
                 RebarService rebarService = new RebarService(_sel, _doc);
                 List<Rebar> rebars = rebarService.RebarsFromCurSelected();
                 List<Rebar> filteredRebars = this.FilterRebars(rebars);
-                List<Curve> rebarCurves = rebarService.GetRebarCurves(filteredRebars);
-                GeometryService geometryService = new GeometryService();
-                XYZ bbCenterOfCurves = geometryService.GetBbCenterFromCurveList(rebarCurves);
-                XYZ centerOfTableBody = new XYZ(
-                    UnitUtils.ConvertToInternalUnits(5500, UnitTypeId.Millimeters),
-                    UnitUtils.ConvertToInternalUnits(-2500, UnitTypeId.Millimeters),
-                    UnitUtils.ConvertToInternalUnits(0, UnitTypeId.Millimeters));
-
-                List<Curve> movedRebarCurves = geometryService.moveCurves(rebarCurves, bbCenterOfCurves, centerOfTableBody);
 
                 using (Transaction transaction = new Transaction(_doc, "Создание ведомости деталей"))
                 {
                     transaction.Start();
                     ViewDraftingService viewDraftingService = new ViewDraftingService(_doc, filteredRebars);
                     ViewDrafting viewDrafting = viewDraftingService.ViewDraftingCreate();
-                    ModellingService listModelling = new ModellingService(_doc);
+                    ModellingService listModelling = new ModellingService(_doc, _sel);
                     DetailCurveArray curve = listModelling.CreateTableHead(viewDrafting as View);
-                    listModelling.CreatingMultipleTableBody(viewDrafting as View);
-
-                    listModelling.CreateScetchFromRebarCurves(viewDrafting, movedRebarCurves);
-
-                    _doc.Create.NewDetailCurve(viewDrafting, Line.CreateBound(centerOfTableBody, new XYZ(centerOfTableBody.X + 20, centerOfTableBody.Y, centerOfTableBody.Z)));
-
+                    listModelling.CreatingMultipleTableBody(viewDrafting as View, filteredRebars.Count);
+                    listModelling.CreateScetchesFromRebars(viewDrafting, filteredRebars);
                     transaction.Commit();
                 }
 

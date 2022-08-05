@@ -51,5 +51,9 @@ namespace RebarPartsListGenerator.Model
             Transform moveTransform = Transform.CreateTranslation(new XYZ(endpoint.X - startpoint.X, endpoint.Y - startpoint.Y, endpoint.Z - endpoint.Z));
             return curves.Select(it => it.CreateTransformed(moveTransform)).ToList();
         } 
+        public double ToFeet(double millimeters)
+        {
+            return UnitUtils.ConvertToInternalUnits(millimeters, UnitTypeId.Millimeters);
+        }
     }
 }

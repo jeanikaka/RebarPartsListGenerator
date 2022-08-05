@@ -1,4 +1,6 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Structure;
+using Autodesk.Revit.UI.Selection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,10 +12,14 @@ namespace RebarPartsListGenerator.Model
     public class ModellingService
     {
         static Document _doc = null;
-        public ModellingService(Document doc)
+        static Selection _sel = null;
+        public ModellingService(Document doc, Selection sel)
         {
             _doc = doc;
+            _sel = sel;
         }
+        RebarService _rebarService = new RebarService(_sel, _doc);
+        GeometryService _gS = new GeometryService();
 
         int lineStyle4BlackContId = 2255547; //Стиль линии "NPP_4_Сплошная_Черная"
         int lineStyle5BlackContId = 3062478; //Стиль линии "NPP_5_Сплошная_Черная"
@@ -75,15 +81,22 @@ namespace RebarPartsListGenerator.Model
         }
 
         public double[] _p0 = { 0, -1000, 0 };//The coords of last horizontal line startpoint of table head
-        
-        public void CreatingMultipleTableBody(View view)
+        public double[] _pC = { 5500, -2500, 0 };//The coords of first tablebody
+
+        public List<XYZ> _tableBodysCenters = new List<XYZ>();
+        public void CreatingMultipleTableBody(View view, int quantity)
         {
             double[] _p0 = this._p0;
+            double[] _pC = this._pC;
+            _tableBodysCenters.Add(new XYZ(_gS.ToFeet(_pC[0]), _gS.ToFeet(_pC[1]), _gS.ToFeet(_pC[2])));
+
             int startIndexPos = 1;
-            for (int i = 0;  i < 4; i++)
+            for (int i = 0;  i < quantity; i++)
             {
                 this.CreatingTableBody(view, _p0, startIndexPos);
                 _p0[1] -= 3000;
+                _pC[1] -= 3000;
+                _tableBodysCenters.Add(new XYZ(_gS.ToFeet(_pC[0]), _gS.ToFeet(_pC[1]), _gS.ToFeet(_pC[2])));
                 startIndexPos++;
             }
         }
@@ -139,6 +152,7 @@ namespace RebarPartsListGenerator.Model
             itemTextNote.Width = 0.0298288568924218;
         }
 
+
         
         public void CreateScetchFromRebarCurves(View view, List<Curve> rebarCurves)
         {
@@ -154,10 +168,16 @@ namespace RebarPartsListGenerator.Model
                 detailLine.LineStyle = _doc.GetElement(new ElementId(lineStyle5BlackContId));//стиль "NPP_5_Сплошная_Черная"
             }
         }
-
-
-        
-
-
+        public void CreateScetchesFromRebars(View view, List<Rebar> rebars)
+        {
+            for(int i = 0; i < rebars.Count; i++)
+            {
+                List<Curve> rebarCurves = _rebarService.GetRebarCurves(rebars[i]);
+                XYZ bbCenterOfCurves = _gS.GetBbCenterFromCurveList(rebarCurves);
+                XYZ centerOfTableBody = _tableBodysCenters[i];
+                List<Curve> movedRebarCurves = _gS.moveCurves(rebarCurves, bbCenterOfCurves, centerOfTableBody);
+                CreateScetchFromRebarCurves(view, movedRebarCurves);                
+            }
+        }
     }
 }

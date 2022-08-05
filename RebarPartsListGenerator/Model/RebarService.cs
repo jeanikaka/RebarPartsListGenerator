@@ -39,11 +39,10 @@ namespace RebarPartsListGenerator.Model
             .Cast<Rebar>()
             .ToList();
         }
-        public List<Curve> GetRebarCurves(List<Rebar> rebarList)
+        public List<Curve> GetRebarCurves(Rebar rebar)
         {
 
             List<Curve> rebarCurves = new List<Curve>();
-            Rebar rebar = rebarList[0];
             int n = rebar.NumberOfBarPositions;
             for (int i = 0; i < n; i++)
             {
