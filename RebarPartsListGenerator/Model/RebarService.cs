@@ -39,17 +39,21 @@ namespace RebarPartsListGenerator.Model
             .Cast<Rebar>()
             .ToList();
         }
+
         public List<Curve> GetRebarCurves(Rebar rebar)
         {
-
             List<Curve> rebarCurves = new List<Curve>();
             int n = rebar.NumberOfBarPositions;
+            RebarShape rebarShape = this._doc.GetElement(rebar.GetShapeId()) as RebarShape;
+            List<Curve> shapeCurves = rebarShape.GetCurvesForBrowser().ToList();
             for (int i = 0; i < n; i++)
             {
-                List<Curve> centerlineCurves = rebar.GetCenterlineCurves(adjustForSelfIntersection: true, suppressHooks: false, suppressBendRadius: false, MultiplanarOption.IncludeOnlyPlanarCurves, i).ToList();
-
+                //List<Curve> curves = rebar.GetTransformedCenterlineCurves(adjustForSelfIntersection: true, suppressHooks: false, suppressBendRadius: false, MultiplanarOption.IncludeOnlyPlanarCurves, i).ToList();
+                List<Curve> centerlineCurves = rebar.GetCenterlineCurves(adjustForSelfIntersection: true, suppressHooks: false, suppressBendRadius: false, MultiplanarOption.IncludeAllMultiplanarCurves, i).ToList();
+                Transform transform = rebar.GetMovedBarTransform(i);
                 if (rebar.IsRebarShapeDriven()) //Если арматура по форме
                 {
+
                     var accessor
                         = rebar.GetShapeDrivenAccessor();
 
@@ -57,9 +61,9 @@ namespace RebarPartsListGenerator.Model
                         .GetBarPositionTransform(i);
 
 
-                    foreach (var c in centerlineCurves)
+                    foreach (var c in shapeCurves)
                     {
-                        rebarCurves.Add(c.CreateTransformed(trf));
+                        rebarCurves.Add(c);
                     }
                 }
                 else// Произвольная форма
@@ -69,6 +73,7 @@ namespace RebarPartsListGenerator.Model
                         rebarCurves.Add(c);
                     }
                 }
+
             }
             return rebarCurves;
         }

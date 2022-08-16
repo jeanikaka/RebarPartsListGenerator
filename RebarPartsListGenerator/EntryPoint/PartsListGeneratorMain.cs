@@ -32,6 +32,7 @@ namespace RebarPartsListGenerator
                     return Result.Failed;
                 }
                 RebarService rebarService = new RebarService(_sel, _doc);
+                ModellingService modellingService = new ModellingService(_doc, _sel);
                 List<Rebar> rebars = rebarService.RebarsFromCurSelected();
                 List<Rebar> filteredRebars = this.FilterRebars(rebars);
 
