@@ -11,6 +11,7 @@ namespace RebarPartsListGenerator.Model
         public static string nPPmodelFilter { get; set; } = "NPP_Фильтрация_Модели";
         public static string nPPcomplectNumber { get; set; } = "NPP_Номер_Комплекта";
         public static string headOnSheet { get; set; } = "Заголовок на листе";
+        public static string nPPPosition { get; set; } = "NPP_Позиция";
 
     }
 }

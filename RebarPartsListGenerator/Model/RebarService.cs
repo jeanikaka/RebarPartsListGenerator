@@ -39,45 +39,57 @@ namespace RebarPartsListGenerator.Model
             .Cast<Rebar>()
             .ToList();
         }
+        //public List<Curve> GetRebarCurves(Rebar rebar)
+        //{
+        //    List<Curve> rebarCurves = new List<Curve>();
+        //    int n = rebar.NumberOfBarPositions;
+        //    List<Curve> centerlineCurves = rebar.GetCenterlineCurves(adjustForSelfIntersection: true, suppressHooks: false, suppressBendRadius: false, MultiplanarOption.IncludeAllMultiplanarCurves, n).ToList();
+        //    foreach (var c in centerlineCurves)
+        //    {
+        //        var accessor
+        //                    = rebar.GetShapeDrivenAccessor();
+        //        var trf = accessor
+        //            .GetBarPositionTransform(n);
 
+        //        if (rebar.get_Parameter(BuiltInParameter.REBAR_SHAPE).AsValueString().Contains("Форма арматурного стержня"))
+        //        {
+
+        //        }
+        //        rebarCurves.Add(c.CreateTransformed(trf));
+        //    }
+        //    return rebarCurves;
+        //}
         public List<Curve> GetRebarCurves(Rebar rebar)
         {
-            List<Curve> rebarCurves = new List<Curve>();
-            int n = rebar.NumberOfBarPositions;
             RebarShape rebarShape = this._doc.GetElement(rebar.GetShapeId()) as RebarShape;
-            List<Curve> shapeCurves = rebarShape.GetCurvesForBrowser().ToList();
-            for (int i = 0; i < n; i++)
-            {
-                //List<Curve> curves = rebar.GetTransformedCenterlineCurves(adjustForSelfIntersection: true, suppressHooks: false, suppressBendRadius: false, MultiplanarOption.IncludeOnlyPlanarCurves, i).ToList();
-                List<Curve> centerlineCurves = rebar.GetCenterlineCurves(adjustForSelfIntersection: true, suppressHooks: false, suppressBendRadius: false, MultiplanarOption.IncludeAllMultiplanarCurves, i).ToList();
-                Transform transform = rebar.GetMovedBarTransform(i);
-                if (rebar.IsRebarShapeDriven()) //Если арматура по форме
-                {
-
-                    var accessor
-                        = rebar.GetShapeDrivenAccessor();
-
-                    var trf = accessor
-                        .GetBarPositionTransform(i);
-
-
-                    foreach (var c in shapeCurves)
-                    {
-                        rebarCurves.Add(c);
-                    }
-                }
-                else// Произвольная форма
-                {
-                    foreach (var c in centerlineCurves)
-                    {
-                        rebarCurves.Add(c);
-                    }
-                }
-
-            }
-            return rebarCurves;
+            List<Curve> shapeCurves = rebarShape.GetCurvesForBrowser().ToList();            
+            List<Curve> centerlineCurves = rebar.GetCenterlineCurves(adjustForSelfIntersection: true, suppressHooks: false, suppressBendRadius: false, MultiplanarOption.IncludeOnlyPlanarCurves, 0).ToList();
+            return centerlineCurves;
         }
         
 
+        /// <summary>
+        /// Use this method for filter rebar list by selected parameters values
+        /// </summary>
+        /// <param name="rebarList">List to filter</param>
+        /// <returns>Filtered list of rebars</returns>
+        public List<Rebar> FilterRebars(List<Rebar> rebarList)
+        {
+            List<Rebar> filteredRebars = new List<Rebar>();
+            List<string> addedForms = new List<string>();
+            return rebarList.Where(element =>
+            {
+                bool isNPP_R_Length_in_Running_Meters = _doc.GetElement(element.GetTypeId()).LookupParameter("NPP_R_Length_in_Running_Meters").AsInteger() == 1;
+                bool isNPP_R__B = element.LookupParameter("NPP_R__B").AsDouble() > 0;
+                bool isEndProcessing = element.LookupParameter("NPP_Обработка_Концов_0_1").AsInteger() == 1;
+                string rebarForm = element.get_Parameter(BuiltInParameter.REBAR_SHAPE).AsValueString();                
+                bool allow = (isNPP_R_Length_in_Running_Meters || isNPP_R__B || isEndProcessing) && !addedForms.Contains(rebarForm);
+                if (!addedForms.Contains(rebarForm))
+                {
+                    addedForms.Add(rebarForm);
+                }
+                return allow;
+            }).ToList();
+        }
     }
 }
